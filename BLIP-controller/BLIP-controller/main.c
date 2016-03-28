@@ -7,6 +7,8 @@
 
 #include <avr/io.h>
 
+#include "uart.h"
+
 void init_gpio(void)
 {
 	//Init Port B
@@ -32,16 +34,10 @@ void init_timers(void)
 	
 }
 
-void init_uart(void)
-{
-	UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-	UBRR0 = 25;	//19200 baud
-}
-
 int main(void)
 {
 	init_gpio();
-	init_uart();
+	uart_init();
 	
 	UDR0 = 'a';
     while (1) 
