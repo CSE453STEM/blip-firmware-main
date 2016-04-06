@@ -5,9 +5,14 @@
  * Author : Alex
  */ 
 
+#define F_CPU 8000000
+
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 
 #include "uart.h"
+
 
 void init_gpio(void)
 {
@@ -39,9 +44,18 @@ int main(void)
 	init_gpio();
 	uart_init();
 	
-	UDR0 = 'a';
+	sei();
+	
+	UDR0 = 'A';
+	
+	unsigned char data;
+	
     while (1) 
     {
+		if(uart_rx_byte(&data))
+		{
+			uart_tx_byte(data);
+		}
     }
 }
 

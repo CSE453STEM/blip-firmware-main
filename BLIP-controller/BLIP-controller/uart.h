@@ -13,10 +13,12 @@
 void uart_init(void);
 
 // Transmit a single byte
-void uart_tx_byte(unsigned char data);
+// Returns number of bytes placed into transmit queue
+unsigned char uart_tx_byte(unsigned char data);
 
-// Receive a single byte from rx buffer
-unsigned char uart_rx_byte(void);
+// Receive a single byte from rx buffer, place into data pointer
+// Returns number of bytes retreived
+unsigned char uart_rx_byte(unsigned char* data);
 
 
 
