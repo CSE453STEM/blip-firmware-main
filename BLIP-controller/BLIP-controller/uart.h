@@ -20,6 +20,10 @@ unsigned char uart_tx_byte(unsigned char data);
 // Returns number of bytes retreived
 unsigned char uart_rx_byte(unsigned char* data);
 
+// Check number of bytes in receive queue
+// Returns number of bytes currently in queue
+unsigned char uart_rx_check(void);
+
 
 
 #endif /* UART_H_ */

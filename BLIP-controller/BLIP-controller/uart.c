@@ -43,8 +43,8 @@ unsigned char uart_tx_byte(unsigned char data)
 	{
 		//TX buffer isn't full, add to queue and enable transmissions
 		tx_buf.array[tx_buf.head] = data; 
-		UCSR0B |= (1<<UDRIE0);	//Start interrupts on transmit register empty
 		tx_buf.head++;
+		UCSR0B |= (1<<UDRIE0);	//Start interrupts on transmit register empty
 		return 1;	//Indicate one byte added to queue
 	}
 	
@@ -56,13 +56,21 @@ unsigned char uart_rx_byte(unsigned char* data)
 {
 	if(rx_buf.head != rx_buf.tail)
 	{
-		//RX buffer isn't empty, return a byte of data
-		*data = rx_buf.array[tx_buf.tail];
+		//RX buffer isn't empty, return 1 byte of data read
+		*data = rx_buf.array[rx_buf.tail];
 		rx_buf.tail++;
 		return 1;
 	}
+	
+	//Buffer was empty, return 0 bytes read
 	return 0;
 }
+
+unsigned char uart_rx_check(void)
+{
+	return rx_buf.head - rx_buf.tail;
+}
+
 
 ISR(USART_RX_vect)
 {

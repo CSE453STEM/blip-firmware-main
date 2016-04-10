@@ -45,14 +45,11 @@ int main(void)
 	uart_init();
 	
 	sei();
-	
-	UDR0 = 'A';
-	
-	unsigned char data;
-	
+
+	unsigned char data;	
     while (1) 
     {
-		if(uart_rx_byte(&data))
+		while(uart_rx_byte(&data))
 		{
 			uart_tx_byte(data);
 		}
