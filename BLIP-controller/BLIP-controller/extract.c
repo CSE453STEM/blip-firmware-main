@@ -1,21 +1,30 @@
-struct data {
-	char blip;
-	char pay_size;
-	char payload[];
-};
+#include extract.h
 
-struct data extract(char[] i) {
-	if( i[0] == 0xFF ) {
-		struct data ret;
-		ret.blip = i[1];
-		ret.pay_size = i[2];
-		strncpy( ret.payload, &i[3], i[2]);
-		ret.payload[i[2]] = '\0';
-	}
-};
+void buildmessage(char c) {
 
-int main(void) {
-	char[] i = 0xFF1008AABBCCDDEEAABBCC;
-	struct data p = extract(i);
-	
+  if( c == 0xFF ) {
+    count++;
+  }
+
+  if( count == 1 ) {
+    speed = c;
+    count++;
+  }
+  else if( count == 2 ) {
+    pay_size = c;
+    count++;
+  }
+  else if( count >= 3 && count <= ( pay_size + 2 ) ) {
+    message[count-3] = c;
+    count++;
+  }
+  else if( count > ( pay_size + 2 ) ) {
+    controller_transmit(speed, message, pay_size);
+    count = 0;
+    pay_size = 0;
+  }
 }
+    
+    
+
+
