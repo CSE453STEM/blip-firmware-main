@@ -12,6 +12,8 @@
 #include <util/delay.h>
 
 #include "uart.h"
+#include "led.h"
+#include "controller.h"
 
 
 void init_gpio(void)
@@ -29,30 +31,25 @@ void init_gpio(void)
 	PORTD = 0x00;
 }
 
-void init_timers(void)
-{
-	//Init timer 0
-	
-	//Init timer 1
-	
-	//Init timer 2
-	
-}
-
 int main(void)
 {
 	init_gpio();
 	uart_init();
+	controller_init();
 	
 	sei();
+	unsigned char buffer[3] = {'A', 'B', 'C'};
+	controller_transmit(0x06, buffer, 3);
 
 	unsigned char data;	
     while (1) 
     {
-		while(uart_rx_byte(&data))
+		controller_process();
+		/*while(uart_rx_byte(&data))
 		{
 			uart_tx_byte(data);
-		}
+			led_write(data);
+		}*/
     }
 }
 
