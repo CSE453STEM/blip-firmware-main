@@ -23,12 +23,12 @@ void init_gpio(void)
 	PORTB = 0x00;	//All outputs off
 	
 	//Init port C
-	DDRC = 0xEF;	//Pins 0-6 output
-	PORTC = 0x00;	//All outputs off
+	DDRC = 0x00;	//Pins 0-6 input
+	PORTC = 0x00;	//All pullups off
 	
 	//Init port D
-	DDRD = 0x00;
-	PORTD = 0x00;
+	DDRD = 0x00;	//Pins 0-7 input
+	PORTD = 0x00;	//All pullups off
 }
 
 int main(void)
@@ -39,7 +39,7 @@ int main(void)
 	
 	sei();
 	unsigned char buffer[3] = {'A', 'B', 'C'};
-	controller_transmit(0x06, buffer, 3);
+	//controller_transmit(0x00, buffer, 3);
 
 	unsigned char data;	
     while (1) 

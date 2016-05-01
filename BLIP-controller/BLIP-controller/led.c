@@ -13,18 +13,15 @@
 unsigned char led_read(void){
 	unsigned char data;
 	
-	data = PINB & 0x7F; 
+	data = PINC & 0x3F;
+	data |= (PIND & 0x04) << 4; 
 	return data;
 }
 
 
 /*this turns the leds on */
 void led_write(unsigned char data){
-	
-	data = data & 0x7F;
-	PORTB = data;
-
-	
+	PORTB = data & 0x7F;
 }
 
 
