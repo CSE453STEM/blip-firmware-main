@@ -162,6 +162,12 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="parser.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="parser.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="uart.c">
       <SubType>compile</SubType>
     </Compile>

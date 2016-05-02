@@ -32,6 +32,7 @@ static unsigned char lightsOn;
 static unsigned char receiveData;
 static unsigned char receiveFlag;
 
+//Local functions
 static void pci_enable()
 {
 	PCMSK2 = (1<<PCINT18);
@@ -44,6 +45,7 @@ static void pci_disable()
 	PCMSK1 = 0;
 }
 
+//Global functions
 void controller_init(void)
 {
 	state = STATE_IDLE;

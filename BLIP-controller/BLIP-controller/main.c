@@ -14,6 +14,7 @@
 #include "uart.h"
 #include "led.h"
 #include "controller.h"
+#include "parser.h"
 
 
 void init_gpio(void)
@@ -37,19 +38,15 @@ int main(void)
 	uart_init();
 	controller_init();
 	
-	sei();
-	unsigned char buffer[3] = {'A', 'B', 'C'};
-	//controller_transmit(0x00, buffer, 3);
+	sei();	
 
 	unsigned char data;	
     while (1) 
     {
+		if(uart_rx_byte(&data)) {
+			parser_build_message(data);
+		}
 		controller_process();
-		/*while(uart_rx_byte(&data))
-		{
-			uart_tx_byte(data);
-			led_write(data);
-		}*/
     }
 }
 
