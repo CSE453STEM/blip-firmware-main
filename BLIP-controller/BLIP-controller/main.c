@@ -20,7 +20,7 @@
 void init_gpio(void)
 {
 	//Init Port B
-	DDRB = 0xEF;	//Pins 0-6 output
+	DDRB = 0x7F;	//Pins 0-6 output
 	PORTB = 0x00;	//All outputs off
 	
 	//Init port C
