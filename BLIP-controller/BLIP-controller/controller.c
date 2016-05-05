@@ -4,6 +4,8 @@
  * Created: 4/11/2016 2:01:13 PM
  *  Author: Alex
  */ 
+#define F_CPU 8000000
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
