@@ -15,7 +15,7 @@ unsigned char led_read(void){
 	
 	data = PINC & 0x3F;
 	data |= (PIND & 0x04) << 4; 
-	return ~data;
+	return (~data) & 0x7F;
 }
 
 
