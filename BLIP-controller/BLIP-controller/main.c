@@ -39,6 +39,15 @@ int main(void)
 	controller_init();
 	
 	sei();	
+	
+	//parser_build_message(0xFF);
+	//parser_build_message(0x00);
+	//parser_build_message(0x05);
+	//parser_build_message('a');
+	//parser_build_message('b');
+	//parser_build_message('c');
+	//parser_build_message('d');
+	//parser_build_message('\n');
 
 	unsigned char data;	
     while (1) 

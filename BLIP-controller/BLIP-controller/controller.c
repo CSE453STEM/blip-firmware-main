@@ -29,10 +29,10 @@ static unsigned int transmissionSpeeds[7] = {31250, 15625, 6250, 3125, 1562, 102
 static unsigned char transmissionData[128];
 static unsigned char transmissionSize;
 static unsigned char transmissionCount;
-static unsigned char lightsOn;
+volatile static unsigned char lightsOn;
 
-static unsigned char receiveData;
-static unsigned char receiveFlag;
+volatile static unsigned char receiveData;
+volatile static unsigned char receiveFlag;
 
 //Local functions
 static void pci_enable()
@@ -84,6 +84,11 @@ void controller_transmit(unsigned char speed, unsigned char* data, unsigned char
 	unsigned char i;
 	for(i = 0; i < size; i++)
 	{
+		if(data[i]=='?') data[i] = 0x11;
+		if(data[i]=='_') data[i] = 0x12;
+		if(data[i]=='w') data[i] = 0x13;
+		if(data[i]=='o') data[i] = 0x14;
+		
 		transmissionData[i] = data[i];
 	}
 	if(speed > 6) speed = 6;
@@ -98,6 +103,12 @@ void controller_process(void)
 			if(receiveFlag)
 			{
 				receiveFlag = 0;
+				
+				if(receiveData == 0x11) receiveData = '?';	//Remap characters that use 6 LEDs because that messes up the transmission for some reason
+				if(receiveData == 0x12) receiveData = '_';
+				if(receiveData == 0x13) receiveData = 'w';
+				if(receiveData == 0x14) receiveData = 'o';
+				
 				uart_tx_byte(receiveData);
 			}
 			break;
