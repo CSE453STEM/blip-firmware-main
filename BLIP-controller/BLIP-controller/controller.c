@@ -29,7 +29,6 @@ static unsigned int transmissionSpeeds[7] = {31250, 15625, 6250, 3125, 1562, 102
 static unsigned char transmissionData[128];
 static unsigned char transmissionSize;
 static unsigned char transmissionCount;
-volatile static unsigned char lightsOn;
 
 volatile static unsigned char receiveData;
 volatile static unsigned char receiveFlag;
@@ -47,11 +46,48 @@ static void pci_disable()
 	PCMSK1 = 0;
 }
 
+static void delay(unsigned char delayTime)
+{
+	switch(delayTime)
+	{
+		case 0:
+			_delay_ms(1000);
+			break;
+		
+		case 1:
+			_delay_ms(500);
+			break;
+			
+		case 2:
+			_delay_ms(200);
+			break;
+			
+		case 3:
+			_delay_ms(100);
+			break;
+			
+		case 4:
+			_delay_ms(50);
+			break;
+			
+		case 5:
+			_delay_ms(33.333);
+			break;
+			
+		case 6:
+			_delay_ms(33.333);
+			break;
+			
+		default:
+			_delay_ms(1000);
+			break;
+	}
+}
+
 //Global functions
 void controller_init(void)
 {
 	state = STATE_IDLE;
-	lightsOn = 0;
 	receiveFlag = 0;
 	// Initialize the timer module
 	TCCR1B |= (1<<WGM12);
@@ -78,47 +114,58 @@ void controller_transmit(unsigned char speed, unsigned char* data, unsigned char
 	{
 		return;	//We weren't idle, don't start a new transmission
 	}
-	pci_disable();
 	state = STATE_START_TRANSMISSION;
 	transmissionSize = size;
-	unsigned char i;
-	for(i = 0; i < size; i++)
-	{
-		if(data[i]=='?') data[i] = 0x11;
-		if(data[i]=='_') data[i] = 0x12;
-		if(data[i]=='w') data[i] = 0x13;
-		if(data[i]=='o') data[i] = 0x14;
-		
-		transmissionData[i] = data[i];
-	}
+	
 	if(speed > 6) speed = 6;
 	OCR1A = transmissionSpeeds[speed];
+	
+	transmissionData[0] = speed + 1;
+	transmissionData[1] = transmissionSize;
+	
+	unsigned char i;
+	for(i = 0; i < size ; i++)
+	{		
+		transmissionData[i + 2] = data[i];
+	}
+	
 }
 
 void controller_process(void)
 {
 	switch(state) {
 		case STATE_IDLE:
-			//Wait for Lock Request or a call to controller_transmit()
+			//If we receive a character wait and read line again.  If cleared, end of transmission
 			if(receiveFlag)
 			{
 				receiveFlag = 0;
+				unsigned char receiveSpeed = receiveData - 1;
+				pci_disable();
+				_delay_ms(5);
+				delay(receiveSpeed);
 				
-				if(receiveData == 0x11) receiveData = '?';	//Remap characters that use 6 LEDs because that messes up the transmission for some reason
-				if(receiveData == 0x12) receiveData = '_';
-				if(receiveData == 0x13) receiveData = 'w';
-				if(receiveData == 0x14) receiveData = 'o';
+				unsigned char receiveSize = led_read();
+				delay(receiveSpeed);
 				
-				uart_tx_byte(receiveData);
+				unsigned char i= 0;
+				for(i = 0; i < receiveSize; i++)
+				{
+					PIND = 0x08;
+					uart_tx_byte(led_read());
+					delay(receiveSpeed);
+				}
+				pci_enable();
 			}
 			break;
 			
 		case STATE_START_TRANSMISSION:
+			//Disable pin change interrupts.  Don't want to read your own data!
+			pci_disable();
+			
 			//Set up lights with the proper first byte
 			//Reset counter to 0
 			transmissionCount = 0;
 			led_write(transmissionData[0]);
-			lightsOn = 1;
 			state = STATE_TRANSMITTING;
 			
 			//Enable timer
@@ -133,6 +180,7 @@ void controller_process(void)
 				//Transmission is done
 				//Exit transmit mode
 				state = STATE_IDLE;
+				_delay_ms(1);
 				pci_enable();
 			}
 			break;
@@ -150,31 +198,20 @@ ISR(TIMER1_COMPA_vect)
 	
 	//When compare is triggered, data has been on the line for the proper amount of time.  
 	//Change it to the next byte (Or clear the line if we have reached the end of message)
-	if(lightsOn)
+	transmissionCount++;
+	if(transmissionCount == transmissionSize + 2)
 	{
-		//Lights were on for one cycle, turn them off and do nothing else
+		//Xmit done, turn off timer and clear line
 		led_clear();
-		lightsOn = 0;
+		TCCR1B &= ~(1<<CS12);
 	}
 	else
 	{
-		
-		transmissionCount++;
-	
-		if(transmissionCount == transmissionSize)
-		{
-			//Xmit done, turn off timer and clear line
-			led_clear();
-			TCCR1B &= ~(1<<CS12);
-		}
-		else
-		{
-			//Xmit not done, put next byte on line
-			led_write(transmissionData[transmissionCount]);
-			lightsOn = 1;
-			//Reset timer and wait again
-		}
+		//Xmit not done, put next byte on line
+		led_write(transmissionData[transmissionCount]);
+		//Reset timer and wait again
 	}
+
 }
 
 ISR(PCINT1_vect)
